@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PySonic Web Editor</title>
+  <!-- CodeMirror from CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 10px; }
+    #editor { height: 400px; border: 1px solid #ccc; }
+    button { margin: 5px; padding: 8px 12px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h2>PySonic Web Editor</h2>
+  <form id="editor-form">
+    <textarea id="editor">from pyo import Sine
+
+# Example: sine wave
+out_obj = Sine(freq=440, mul=0.1).out()</textarea>
+  </form>
+  <br>
+  <button onclick="runCode()">▶ Run</button>
+  <button onclick="stopCode()">⏹ Stop</button>
+
+  <pre id="output"></pre>
+
+  <script>
+    var cm = CodeMirror.fromTextArea(document.getElementById("editor"), {
+      lineNumbers: true,
+      mode: "python",
+      theme: "default"
+    });
+
+    async function runCode() {
+      const code = cm.getValue();
+      const res = await fetch("/run", {
+        method: "POST",
+        body: code
+      });
+      const data = await res.json();
+      document.getElementById("output").innerText = JSON.stringify(data, null, 2);
+    }
+
+    async function stopCode() {
+      const res = await fetch("/stop", { method: "POST" });
+      const data = await res.json();
+      document.getElementById("output").innerText = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
