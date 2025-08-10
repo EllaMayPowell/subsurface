@@ -6,7 +6,7 @@ The goal of subsurface is to create an easy interface to use python to live code
 
 
 
-it runs on pyo which requires python v 3.11
+it runs on sounddevice
 
 
 
