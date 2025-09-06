@@ -1,4 +1,4 @@
-# Hello! Welcome to subsurface 
+# Hello! Welcome to subsurface
 
 
 
@@ -14,7 +14,7 @@ to run using a localhost:
 
 
 
-1. Create new folder 
+1. Create new folder
 
 
 
@@ -26,15 +26,15 @@ py -3.11 --version
 
 
 
-2\) create venv inside your folder 
+2\) create venv inside your folder
 
 
 
-py -3.11 -m venv venv311 
+py -3.11 -m venv venv311
 
 
 
-3\) install dependencies 
+3\) install dependencies
 
 
 
@@ -42,11 +42,13 @@ pip install pyo watchdog mido
 
 
 
+4\) upload your own samples into the sample folder
+
+wav and AIFF are the safest but mp3 might work 
 
 
 
 
-**AT SOME POINT IN THE FUTURE I WILL MAKE AN INSTALLER <3** 
 
-
+**AT SOME POINT IN THE FUTURE I WILL MAKE AN INSTALLER <3**
 
