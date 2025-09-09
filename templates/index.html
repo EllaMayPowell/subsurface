@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subsurface - Music Sample Sync</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">🎵 Subsurface</a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/">Upload</a>
+                <a class="nav-link" href="/sync">Sync</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <h1 class="text-center mb-4">Music Sample Upload</h1>
+                
+                <!-- Upload Form -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Upload Audio Sample</h5>
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <input type="file" class="form-control" id="audioFile" name="file" 
+                                       accept=".mp3,.wav,.flac,.m4a,.ogg" required>
+                                <div class="form-text">Supported formats: MP3, WAV, FLAC, M4A, OGG</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <span id="uploadSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                Upload & Analyze
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Upload Status -->
+                <div id="uploadStatus" class="alert d-none" role="alert"></div>
+
+                <!-- Uploaded Files -->
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Uploaded Samples</h5>
+                        <div id="fileList">
+                            <p class="text-muted">No samples uploaded yet.</p>
+                        </div>
+                        <button class="btn btn-secondary" onclick="loadFiles()">Refresh List</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const fileInput = document.getElementById('audioFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showStatus('Please select a file', 'danger');
+                return;
+            }
+            
+            formData.append('file', file);
+            
+            // Show loading
+            const uploadBtn = document.querySelector('#uploadForm button[type="submit"]');
+            const spinner = document.getElementById('uploadSpinner');
+            spinner.classList.remove('d-none');
+            uploadBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus(`File uploaded successfully: ${result.filename}`, 'success');
+                    displayAnalysis(result.filename, result.analysis);
+                    loadFiles(); // Refresh file list
+                    fileInput.value = ''; // Clear input
+                } else {
+                    showStatus(result.error || 'Upload failed', 'danger');
+                }
+            } catch (error) {
+                showStatus('Upload error: ' + error.message, 'danger');
+            } finally {
+                spinner.classList.add('d-none');
+                uploadBtn.disabled = false;
+            }
+        });
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.className = `alert alert-${type}`;
+            statusDiv.textContent = message;
+            statusDiv.classList.remove('d-none');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                statusDiv.classList.add('d-none');
+            }, 5000);
+        }
+
+        function displayAnalysis(filename, analysis) {
+            const analysisHtml = `
+                <div class="analysis-result border p-3 mb-3 rounded">
+                    <h6>${filename}</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">Tempo:</small> <strong>${analysis.tempo.toFixed(2)} BPM</strong><br>
+                            <small class="text-muted">Duration:</small> <strong>${analysis.duration.toFixed(2)}s</strong><br>
+                            <small class="text-muted">Beats:</small> <strong>${analysis.beat_count}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Sample Rate:</small> <strong>${analysis.sample_rate} Hz</strong><br>
+                            <small class="text-muted">Brightness:</small> <strong>${analysis.spectral_centroid.toFixed(0)} Hz</strong><br>
+                            <small class="text-muted">Energy:</small> <strong>${analysis.rms_energy.toFixed(3)}</strong>
+                        </div>
+                    </div>
+                    <audio controls class="w-100 mt-2">
+                        <source src="/audio/${filename}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            `;
+            
+            showStatus(analysisHtml, 'info');
+        }
+
+        async function loadFiles() {
+            try {
+                const response = await fetch('/files');
+                const files = await response.json();
+                
+                const fileList = document.getElementById('fileList');
+                
+                if (files.length === 0) {
+                    fileList.innerHTML = '<p class="text-muted">No samples uploaded yet.</p>';
+                    return;
+                }
+                
+                let html = '';
+                files.forEach(file => {
+                    html += `
+                        <div class="file-item border p-3 mb-2 rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">${file.filename}</h6>
+                                    <small class="text-muted">
+                                        ${file.analysis.tempo.toFixed(1)} BPM • 
+                                        ${file.analysis.duration.toFixed(1)}s • 
+                                        ${file.analysis.beat_count} beats
+                                    </small>
+                                </div>
+                                <div>
+                                    <audio controls>
+                                        <source src="/audio/${file.filename}" type="audio/mpeg">
+                                    </audio>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                fileList.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading files:', error);
+            }
+        }
+
+        // Load files on page load
+        loadFiles();
+    </script>
+</body>
+</html>
