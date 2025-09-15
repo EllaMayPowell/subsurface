@@ -18,7 +18,7 @@ to run using a localhost:
 
 
 
-1)check python 3.11 and if none, gt it from python site https://www.python.org/downloads/
+1)check python 3.11 and if none, get it from python site https://www.python.org/downloads/
 
 
 
