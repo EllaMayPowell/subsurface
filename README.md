@@ -48,7 +48,5 @@ wav and AIFF are the safest but mp3 might work
 
 
 
-
-
-**AT SOME POINT IN THE FUTURE I WILL MAKE AN INSTALLER <3**
+installer coming soon!
 
