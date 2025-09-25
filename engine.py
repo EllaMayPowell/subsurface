@@ -2,7 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pyo import Server
+from pyo import Server, SfPlayer, SndTable, TableRead
+import os
 import traceback
 
 # Start audio server
