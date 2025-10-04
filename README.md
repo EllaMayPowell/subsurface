@@ -26,7 +26,7 @@ py -3.11 --version
 
 
 
-2\) create venv inside your folder
+2\) create venv in side your folder
 
 
 
