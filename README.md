@@ -30,9 +30,9 @@ py -3.11 --version
 
 
 
-py -3.11 -m venv venv311
+py -3.1 1 -m venv venv311
 
-
+&nbsp;
 
 3\) install dependencies
 
